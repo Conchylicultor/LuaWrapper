@@ -11,12 +11,17 @@ extern "C" {
     #include <luaT.h>
 }
 
+#include "lua_wrap_generic.hpp"
 
 
+
+/** Macro which assert if the condition is valid. Mainly called to check if the lua stack
+  * is in a valid state
+  */
 #define ASSERT_STATE(valid) \
     if (!(valid)) \
     {\
-        throw LuaException("invalid state in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__));\
+        throw LuaException("Invalid state in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__));\
     }
 
 
@@ -37,12 +42,16 @@ namespace LuaWrap
     int load_script(lua_State* L, const std::string& script_name);
 
     /** Equivallent to torch.load('model_name')
+      * The script should follow some constraint: It should return an object
+      * containing 2 methods:
+      *  - load(): the init method (will be called with this function)
+      *  - forward(batch_in): the image to process
       * Return the lua register id of the model
       * Warning: the path is given from the working directory
       */
     int load_model(lua_State* L, const std::string& model_name);
 
-    /** TODO: DIFFERENCES WITH LOAD SCRIPT ??
+    /**
       */
     void load_lualib(lua_State* L, const std::string& lib_name);
 
@@ -87,6 +96,10 @@ namespace LuaWrap
     template <typename TNumber>
     TNumber populate_number(lua_State* L);
 
+    ////////////////////////// OpenCv/Tensor manipulation API //////////////////////////
+
+    // Define the generics here
+    #include "tensor_all.hpp"
 
     ////////////////////////// Low level Level API //////////////////////////
 
@@ -116,6 +129,7 @@ namespace LuaWrap
     private:
         std::string _message;
     };
+
 }
 
 

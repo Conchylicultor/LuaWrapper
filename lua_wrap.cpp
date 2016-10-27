@@ -162,6 +162,13 @@ TNumber populate_number(lua_State* L)
 }
 
 
+////////////////////////// OpenCv/Tensor manipulation API //////////////////////////
+
+
+// Define the generics here
+#include "tensor_all.cpp"
+
+
 ////////////////////////// Low level Level API //////////////////////////
 
 
@@ -185,7 +192,7 @@ void print_tensor(lua_State* L, THFloatTensor* tensor)
 }
 
 
-void set_defaultfloattensor(lua_State* L);
+void set_defaultfloattensor(lua_State* L)
 {
     int stack_size = lua_gettop(L);
 
@@ -209,5 +216,6 @@ const char* LuaException::what() const noexcept
 {
     return _message.c_str();
 }
+
 
 } // End of namespace

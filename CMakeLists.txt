@@ -22,8 +22,12 @@ set(TH_LIB_DEPS -lTH -lluajit -lluaT) # -ltorch-lua-static -lnn -ltorch -lnnx -l
 
 
 set(MAIN_SOURCES
+    # Do NOT include generics here (specially ,cpp), should be dynamically compiled when they
+    # are included in lua WRAP
+
     lua_wrap.cpp
     lua_wrap.hpp
+
     main.cpp
 )
 

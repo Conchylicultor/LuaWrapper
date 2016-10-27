@@ -11,7 +11,7 @@ using namespace std;
   */
 void unit_test(lua_State* L)
 {
-
+    (void)L;
 }
 
 
@@ -19,8 +19,15 @@ void unit_test(lua_State* L)
   */
 int main(int argc, char** argv)
 {
-    cout << "Lua/troch wrapper test" << endl;
+    (void)argc;
+    (void)argv;
 
+    cout << "Lua/torch wrapper test" << endl;
+
+    lua_State* L = LuaWrap::init_torch_vm();
+    (void)L;
+
+    THFloatTensor* input = LuaWrap::THFloat_create_tensor(96, 96);
 
     cout << "The End" << endl;
 
