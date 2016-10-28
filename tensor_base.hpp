@@ -11,8 +11,8 @@
   * Memory should be freed by lua garbadge collector
   * WARNING: Batch size not supported
   */
-LUAW_TNAME* LUAW_METHOD(create_tensor)(int w, int h, int c=3, int batch_size=1);
+LUAW_Tensor* LUAW_THType(create_tensor)(int w, int h, int c=3, int batch_size=1);
 
 /** Push a Tensor on top of the stack
   */
-void LUAW_METHOD(push_tensor)(lua_State* L, LUAW_TNAME* tensor);
+void LUAW_THType(push_tensor)(lua_State* L, LUAW_Tensor* tensor);
