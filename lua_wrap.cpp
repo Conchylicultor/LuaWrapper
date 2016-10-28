@@ -21,7 +21,8 @@ lua_State* init_torch_vm()
     load_lualib(L, "torch"); //load torch and nn
     load_lualib(L, "nn");
 
-    // TODO: Set Default torch tensor ?
+    // Some configuration options
+    set_defaultfloattensor(L);
     // TODO: Set heap tracking ?
 
     // Calling torch.setheaptracking(false)
@@ -109,10 +110,10 @@ void call_lua_method(
     lua_remove(L,-2-offset);                           // stack = [...,<args>, instance:method() (, instance)]
     for (int i = 0; i < nb_in; ++i) // Add arguments in the order
     {
-        int current_stack_length = nb_in + 1 + offset;
-        ASSERT_STATE(lua_gettop(L) == current_stack_length - (stack_size - nb_in));
-        lua_pushvalue(L, -current_stack_length);       // stack = [...,<args>, instance:method() (, instance), <args>]
-        lua_remove(L, -(current_stack_length+1));      // stack = [...,instance:method()(, instance), <args>]
+        ASSERT_STATE(lua_gettop(L) == stack_size + 1 + offset);
+        int current_top_length = nb_in + 1 + offset; // len(<args>) + len(instance:method())=1 + len(instance)=0/1
+        lua_pushvalue(L, -current_top_length);       // stack = [...,<args>, instance:method() (, instance), <args>]
+        lua_remove(L, -(current_top_length+1));      // stack = [...,instance:method()(, instance), <args>]
     }
     check_error(
                 lua_pcall(L, offset+nb_in, nb_out, 0), // stack = [...,<returns>] (Function called)

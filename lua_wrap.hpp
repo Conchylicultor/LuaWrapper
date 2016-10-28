@@ -21,7 +21,7 @@ extern "C" {
 #define ASSERT_STATE(valid) \
     if (!(valid)) \
     {\
-        throw LuaException("Invalid state in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__));\
+        throw LuaException("Invalid state in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__) + ": " LUAW_STRINGIFY(valid));\
     }
 
 
@@ -31,17 +31,12 @@ namespace LuaWrap
     ////////////////////////// High Level API //////////////////////////
 
     /** Initialize lua state, and load standard libs
-      * Will load torch and nn
+      * Will load torch and nn and set default tensor type to FloatTensor
       */
     lua_State* init_torch_vm();
 
     /** Equivalent to require 'script_name'.
       * Return the lua register id of the script
-      * Warning: the path is given from the working directory
-      */
-    int load_script(lua_State* L, const std::string& script_name);
-
-    /** Equivallent to torch.load('model_name')
       * The script should follow some constraint: It should return an object
       * containing 2 methods:
       *  - load(): the init method (will be called with this function)
@@ -49,9 +44,14 @@ namespace LuaWrap
       * Return the lua register id of the model
       * Warning: the path is given from the working directory
       */
+    int load_script(lua_State* L, const std::string& script_name);
+
+    /** Equivallent to torch.load('model_name')
+      * Warning: the path is given from the working directory
+      */
     int load_model(lua_State* L, const std::string& model_name);
 
-    /**
+    /** Equivalent to require 'lib_name'
       */
     void load_lualib(lua_State* L, const std::string& lib_name);
 

@@ -15,8 +15,8 @@ LUAW_TNAME* LUAW_METHOD(create_tensor)(int w, int h, int c, int batch_size)
     long stride_2 = w;
     long stride_3 = 1;
 
-    LUAW_TYPE* tensorData = (LUAW_TYPE*)malloc(sizeof(LUAW_TYPE)*len);
-    LUAW_SNAME* storage = LUAW_SMETHOD(newWithData)(tensorData, len);
+    //LUAW_TYPE* tensorData = (LUAW_TYPE*)malloc(sizeof(LUAW_TYPE)*len);
+    LUAW_SNAME* storage = LUAW_SMETHOD(newWithSize)(len);
     LUAW_TNAME* input = LUAW_TMETHOD(newWithStorage3d)(storage,
                                                        0, // Offset
                                                        c, stride_1, // Channels
@@ -24,4 +24,9 @@ LUAW_TNAME* LUAW_METHOD(create_tensor)(int w, int h, int c, int batch_size)
                                                        w, stride_3); // Width
 
     return input;
+}
+
+void LUAW_METHOD(push_tensor)(lua_State* L, LUAW_TNAME* tensor)
+{
+    luaT_pushudata(L, (void*)tensor, "torch." LUAW_STRINGIFY(LUAW_NAME) "Tensor"); // Send the tensor to lua (Should delegate memory management)
 }

@@ -1,2 +1,4 @@
 # Output folder
+*.net
+*.t7
 build/
