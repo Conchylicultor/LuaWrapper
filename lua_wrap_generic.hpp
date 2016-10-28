@@ -11,16 +11,17 @@
 #define LUAW_CONCAT(A, B) LUAW_CONCAT_OP(A, B)
 #define LUAW_CONCAT_U(A, B) LUAW_CONCAT(A, LUAW_CONCAT(_, B))
 
-// Stringify macro (usefull for printing the tensor type for instance)
+// Stringify macro (usefull for printing the tensor type)
 #define LUAW_STRINGIFY_OP(x) #x
 #define LUAW_STRINGIFY(x) LUAW_STRINGIFY_OP(x)
 
 
 // Defines shortcuts THTypeTensor and THTypeStorage
-#define LUAW_Tensor LUAW_CONCAT(TH, LUAW_CONCAT(LUAW_NAME, Tensor))
-#define LUAW_Storage LUAW_CONCAT(TH, LUAW_CONCAT(LUAW_NAME, Storage))
+#define LUAW_THNAME LUAW_CONCAT(TH, LUAW_NAME)
+#define LUAW_Tensor LUAW_CONCAT(LUAW_THNAME, Tensor)
+#define LUAW_Storage LUAW_CONCAT(LUAW_THNAME, Storage)
 
-#define LUAW_THType(NAME)  LUAW_CONCAT(TH, LUAW_CONCAT_U(LUAW_NAME, NAME))
+#define LUAW_THType(NAME) LUAW_CONCAT_U(LUAW_THNAME, NAME)
 #define LUAW_THTensor(NAME) LUAW_CONCAT_U(LUAW_Tensor, NAME)
 #define LUAW_THStorage(NAME) LUAW_CONCAT_U(LUAW_Storage, NAME)
 
