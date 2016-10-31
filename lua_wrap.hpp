@@ -15,16 +15,6 @@ extern "C" {
 
 
 
-/** Macro which assert if the condition is valid. Mainly called to check if the lua stack
-  * is in a valid state
-  */
-#define ASSERT_STATE(valid) \
-    if (!(valid)) \
-    {\
-        throw LuaException("Invalid state in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__) + ": " LUAW_STRINGIFY(valid));\
-    }
-
-
 // TODO: Could create class instead ?
 namespace LuaWrap
 {
@@ -102,12 +92,6 @@ namespace LuaWrap
     #include "tensor_all.hpp"
 
     ////////////////////////// Low level Level API //////////////////////////
-
-    /** If returnedValue != 0, try to capture the error from lua.
-      * Raise an exception containing the error message
-      * WARNING: If the exception is thrown, the stack will be left in an unknown state
-      */
-    void check_error(int returnedValue, lua_State *L);
 
     /** For debugging purpose
       */

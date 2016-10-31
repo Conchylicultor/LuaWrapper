@@ -3,6 +3,30 @@
 #include <iostream>
 
 
+
+////////////////////////// Assersions macros //////////////////////////
+
+/** Macro which assert if the condition is valid. Mainly called to check if the lua stack
+  * is in a valid state
+  */
+#define ASSERT_STATE(valid) \
+    if (!(valid)) \
+    {\
+        throw LuaException("Invalid state in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__) + ": " LUAW_STRINGIFY(valid));\
+    }
+
+/** If returnedValue != 0, try to capture the error from lua.
+  * Raise an exception containing the error message
+  * WARNING: If the exception is thrown, the stack will be left in an unknown state
+  */
+#define CHECK_ERROR(rcode) \
+    if (rcode) \
+    {\
+        std::string errMsg(lua_tostring(L, -1));\
+        throw LuaException("Runtime Error in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__) + ": " + errMsg);\
+    }
+
+
 namespace LuaWrap
 {
 
@@ -44,10 +68,10 @@ int load_script(lua_State* L, const std::string& script_name)
     // TODO: Send init parameters to the script (array of values ?, or values pushed on the stack by the caller)
 
     // Loading the module:                    Initial state:  stack = [...]
-    check_error(luaL_loadfile(L, script_name.c_str()), L); // stack = [..., chunk]
-    check_error(lua_pcall(L,0,1,0), L);                    // stack = [..., dd_module]
-    int script_reg = luaL_ref(L,LUA_REGISTRYINDEX);        // stack = [...]
-    call_lua_method(L, script_reg, "load");                // stack = [...] (calling dd_module:load())
+    CHECK_ERROR(luaL_loadfile(L, script_name.c_str())); // stack = [..., chunk]
+    CHECK_ERROR(lua_pcall(L,0,1,0));                    // stack = [..., dd_module]
+    int script_reg = luaL_ref(L,LUA_REGISTRYINDEX);     // stack = [...]
+    call_lua_method(L, script_reg, "load");             // stack = [...] (calling dd_module:load())
 
     ASSERT_STATE(lua_gettop(L) == stack_size); // Leave the stack as we found it
 
@@ -80,7 +104,7 @@ void load_lualib(lua_State* L, const std::string& lib_name)
 {
     lua_getglobal(L, "require"); // Put the require function on the stack
     lua_pushstring(L, lib_name.c_str()); // Push lib_name to the stack
-    check_error(lua_pcall(L,1,0,0), L); // Equivalent to: require(lib_name)
+    CHECK_ERROR(lua_pcall(L,1,0,0)); // Equivalent to: require(lib_name)
 }
 
 
@@ -98,26 +122,24 @@ void call_lua_method(
 
     int offset = 0; // Take the self argument into account
 
-    //                                     Initial state: stack = [...,<args>]
-    lua_rawgeti(L, LUA_REGISTRYINDEX, instance_ref);   // stack = [...,<args>, instance]
-    lua_pushstring(L, method_name.c_str());            // stack = [...,<args>, instance, "method_name"]
-    lua_gettable(L, -2);                               // stack = [...,<args>, instance, instance:method()]
+    //                                      Initial state: stack = [...,<args>]
+    lua_rawgeti(L, LUA_REGISTRYINDEX, instance_ref);    // stack = [...,<args>, instance]
+    lua_pushstring(L, method_name.c_str());             // stack = [...,<args>, instance, "method_name"]
+    lua_gettable(L, -2);                                // stack = [...,<args>, instance, instance:method()]
     if(is_class) // Push the self argument
     {
-        lua_pushvalue(L, -2);                          // stack = [...,<args>, instance, instance:method(), instance]
+        lua_pushvalue(L, -2);                           // stack = [...,<args>, instance, instance:method(), instance]
         offset = 1; // Take the self ref into account
     }
-    lua_remove(L,-2-offset);                           // stack = [...,<args>, instance:method() (, instance)]
+    lua_remove(L,-2-offset);                            // stack = [...,<args>, instance:method() (, instance)]
     for (int i = 0; i < nb_in; ++i) // Add arguments in the order
     {
         ASSERT_STATE(lua_gettop(L) == stack_size + 1 + offset);
         int current_top_length = nb_in + 1 + offset; // len(<args>) + len(instance:method())=1 + len(instance)=0/1
-        lua_pushvalue(L, -current_top_length);       // stack = [...,<args>, instance:method() (, instance), <args>]
-        lua_remove(L, -(current_top_length+1));      // stack = [...,instance:method()(, instance), <args>]
+        lua_pushvalue(L, -current_top_length);          // stack = [...,<args>, instance:method() (, instance), <args>]
+        lua_remove(L, -(current_top_length+1));         // stack = [...,instance:method()(, instance), <args>]
     }
-    check_error(
-                lua_pcall(L, offset+nb_in, nb_out, 0), // stack = [...,<returns>] (Function called)
-                L);
+    CHECK_ERROR(lua_pcall(L, offset+nb_in, nb_out, 0)); // stack = [...,<returns>] (Function called)
 
     ASSERT_STATE(lua_gettop(L) == stack_size - nb_in + nb_out); // Sanity check
 }
@@ -171,18 +193,6 @@ TNumber populate_number(lua_State* L)
 
 
 ////////////////////////// Low level Level API //////////////////////////
-
-
-void check_error(int returnedValue, lua_State *L)
-{
-    if (returnedValue)
-    {
-        std::string errMsg(lua_tostring(L, -1));
-        // TODO: Clear the stack ?? Free memory ?? (otherwise, push above the
-        // limit !!)
-        throw LuaException(errMsg);
-    }
-}
 
 
 void print_tensor(lua_State* L, THFloatTensor* tensor)
