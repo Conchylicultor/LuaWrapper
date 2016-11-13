@@ -32,7 +32,7 @@ namespace LuaWrap
 
 ////////////////////////// High Level API //////////////////////////
 
-lua_State* init_torch_vm()
+TorchVM::TorchVM()
 {
     // Initialize Lua
     lua_State *L = luaL_newstate(); //start lua VM
@@ -42,11 +42,17 @@ lua_State* init_torch_vm()
 
     // Load standard libs
     luaL_openlibs(L);        //load standard lua libs
-    load_lualib(L, "torch"); //load torch and nn
-    load_lualib(L, "nn");
+    load_lualib("torch"); //load torch and nn
+    load_lualib("nn");
+
+    // Get the torch module
+    lua_getglobal(L, "torch");                // stack = [torch]
+    torch = luaL_ref(L,LUA_REGISTRYINDEX);    // stack = []
 
     // Some configuration options
-    THFloat_setdefaulttensortype(L);
+    THFloat_setdefaulttensortype();
+
+
     // TODO: Set heap tracking ?
 
     // Calling torch.setheaptracking(false)
@@ -56,22 +62,26 @@ lua_State* init_torch_vm()
 //    call_lua_method(L, torch_reg, "setheaptracking", 1, 0, false); // stack = []
 
     ASSERT_STATE(lua_gettop(L) == 0); // Final state empty
-
-    return L;
 }
 
 
-int load_script(lua_State* L, const std::string& script_name)
+TorchVM::~TorchVM()
+{
+    lua_close(L);
+}
+
+
+int TorchVM::load_script(const std::string& script_name)
 {
     int stack_size = lua_gettop(L);
 
     // TODO: Send init parameters to the script (array of values ?, or values pushed on the stack by the caller)
 
-    // Loading the module:                    Initial state:  stack = [...]
+    // Loading the module:                 Initial state:  stack = [...]
     CHECK_ERROR(luaL_loadfile(L, script_name.c_str())); // stack = [..., chunk]
     CHECK_ERROR(lua_pcall(L,0,1,0));                    // stack = [..., dd_module]
     int script_reg = luaL_ref(L,LUA_REGISTRYINDEX);     // stack = [...]
-    call_lua_method(L, script_reg, "load");             // stack = [...] (calling dd_module:load())
+    call_lua_method(script_reg, "load");                // stack = [...] (calling dd_module:load())
 
     ASSERT_STATE(lua_gettop(L) == stack_size); // Leave the stack as we found it
 
@@ -79,17 +89,13 @@ int load_script(lua_State* L, const std::string& script_name)
 }
 
 
-int load_model(lua_State* L, const std::string& model_name)
+int TorchVM::load_model(const std::string& model_name)
 {
     ASSERT_STATE(lua_gettop(L) == 0); //   Initial state:  stack = []
 
-    // Get the torch module
-    lua_getglobal(L, "torch");                          // stack = [torch]
-    int torch_reg = luaL_ref(L,LUA_REGISTRYINDEX);      // stack = []
-
     // Call torch.load("model_name")
     lua_pushstring(L, model_name.c_str());              // stack = ["model_name"]
-    call_lua_method(L, torch_reg, "load", 1, 1, false); // stack = [model] (input: model name, output: model obj)
+    call_lua_method(torch, "load", 1, 1, false);        // stack = [model] (input: model name, output: model obj)
 
     // Pop and save the result
     int model_reg = luaL_ref(L,LUA_REGISTRYINDEX);      // stack = []
@@ -100,7 +106,7 @@ int load_model(lua_State* L, const std::string& model_name)
 }
 
 
-void load_lualib(lua_State* L, const std::string& lib_name)
+void TorchVM::load_lualib(const std::string& lib_name)
 {
     lua_getglobal(L, "require"); // Put the require function on the stack
     lua_pushstring(L, lib_name.c_str()); // Push lib_name to the stack
@@ -108,8 +114,7 @@ void load_lualib(lua_State* L, const std::string& lib_name)
 }
 
 
-void call_lua_method(
-    lua_State* L,
+void TorchVM::call_lua_method(
     int instance_ref,
     const std::string& method_name,
     int nb_in,
@@ -146,8 +151,7 @@ void call_lua_method(
 
 
 template<typename T>
-void pop_lua_array(
-    lua_State* L,
+void TorchVM::pop_lua_array(
     std::vector<T>& out_array,
     T (*populate_fct)(lua_State*) // Read the value on top of the stack and return it [-0,+0,-]
 )
@@ -195,11 +199,21 @@ TNumber populate_number(lua_State* L)
 ////////////////////////// Low level Level API //////////////////////////
 
 
-void print_tensor(lua_State* L, THFloatTensor* tensor)
+void TorchVM::print_tensor(THFloatTensor* tensor) // TODO: Make generic
 {
     lua_getglobal(L,"print");
     luaT_pushudata(L, (void*) tensor, "torch.FloatTensor");
     lua_pcall(L,1,0,0);
+}
+
+lua_State* TorchVM::getL()
+{
+    return L;
+}
+
+void TorchVM::gc()
+{
+    // TODO
 }
 
 

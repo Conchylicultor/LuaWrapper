@@ -20,33 +20,31 @@ void unit_test(lua_State* L)
   */
 void test_memleak()
 {
-    lua_State* L = LuaWrap::init_torch_vm();
-    int model_nin = LuaWrap::load_model(L, "../model_185_bnabs.net");
-    LuaWrap::call_lua_method(L, model_nin, "evaluate"); // model:evaluate()
+    auto torchVm = LuaWrap::TorchVM();
+    int model_nin = torchVm.load_model("../model_185_bnabs.net");
+    torchVm.call_lua_method(model_nin, "evaluate"); // model:evaluate()
 
     for(int i = 0 ; i < 100000 ; ++i)
     {
-        THFloatTensor* input = LuaWrap::THFloat_create_tensor(96, 96);
-        LuaWrap::THFloat_push_tensor(L, input);
+        THFloatTensor* input = torchVm.THFloat_create_tensor(96, 96);
+        torchVm.THFloat_push_tensor(input);
 
-        luaT_stackdump(L);
+        luaT_stackdump(torchVm.getL());
 
-        LuaWrap::call_lua_method(L, model_nin, "forward", 1, 1); // model:forward(input)
+        torchVm.call_lua_method(model_nin, "forward", 1, 1); // model:forward(input)
 
         // If the garbadge collector isn't called form time to time, the memory will keep growing
         // Calling it every iterations will strongly affect the performances
         if(i % 1000 == 0)
         {
-            lua_gc(L, LUA_GCCOLLECT, 0);
+            lua_gc(torchVm.getL(), LUA_GCCOLLECT, 0);
         }
 
-        luaT_stackdump(L);
-        lua_pop(L, 1);
+        luaT_stackdump(torchVm.getL());
+        lua_pop(torchVm.getL(), 1);
 
-        std::cout << i << " " << lua_gc (L, LUA_GCCOUNT, 0) << " " << lua_gc (L, LUA_GCCOUNTB, 0) << std::endl;
+        std::cout << i << " " << lua_gc (torchVm.getL(), LUA_GCCOUNT, 0) << " " << lua_gc (torchVm.getL(), LUA_GCCOUNTB, 0) << std::endl;
     }
-
-    lua_close(L);
 }
 
 
