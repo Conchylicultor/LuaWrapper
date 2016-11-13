@@ -46,7 +46,7 @@ lua_State* init_torch_vm()
     load_lualib(L, "nn");
 
     // Some configuration options
-    set_defaultfloattensor(L);
+    THFloat_setdefaulttensortype(L);
     // TODO: Set heap tracking ?
 
     // Calling torch.setheaptracking(false)
@@ -200,22 +200,6 @@ void print_tensor(lua_State* L, THFloatTensor* tensor)
     lua_getglobal(L,"print");
     luaT_pushudata(L, (void*) tensor, "torch.FloatTensor");
     lua_pcall(L,1,0,0);
-}
-
-
-void set_defaultfloattensor(lua_State* L)
-{
-    int stack_size = lua_gettop(L);
-
-    // TODO: Cloud be done with call_lua_method (Error checking)
-    lua_getglobal(L, "torch");
-    lua_pushstring(L, "setdefaulttensortype");
-    lua_gettable(L,-2); lua_remove(L,-2);
-
-    lua_pushstring(L, "torch.FloatTensor");
-    lua_pcall(L,1,0,0);
-
-    ASSERT_STATE(lua_gettop(L) == stack_size);
 }
 
 

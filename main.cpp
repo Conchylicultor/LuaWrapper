@@ -21,7 +21,7 @@ void unit_test(lua_State* L)
 void test_memleak()
 {
     lua_State* L = LuaWrap::init_torch_vm();
-    int model_nin = LuaWrap::load_model(L, "/home/teradeep/etienne/LuaWrapper/model_185_bnabs.net");
+    int model_nin = LuaWrap::load_model(L, "../model_185_bnabs.net");
     LuaWrap::call_lua_method(L, model_nin, "evaluate"); // model:evaluate()
 
     for(int i = 0 ; i < 100000 ; ++i)

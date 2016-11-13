@@ -97,10 +97,6 @@ namespace LuaWrap
       */
     void print_tensor(lua_State* L, THFloatTensor* tensor);
 
-    /**
-      */
-    void set_defaultfloattensor(lua_State* L);
-
     /** Exception raised when an error is detected lua
       */
     class LuaException: public std::exception

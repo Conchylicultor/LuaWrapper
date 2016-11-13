@@ -21,3 +21,19 @@ void LUAW_THType(push_tensor)(lua_State* L, LUAW_Tensor* tensor)
 {
     luaT_pushudata(L, (void*)tensor, "torch." LUAW_STRINGIFY(LUAW_NAME) "Tensor"); // Send the tensor to lua (Should delegate memory management)
 }
+
+
+void LUAW_THType(setdefaulttensortype)(lua_State* L)
+{
+    int stack_size = lua_gettop(L);
+
+    // TODO: Should be done with call_lua_method (Error checking)
+    lua_getglobal(L, "torch");
+    lua_pushstring(L, "setdefaulttensortype");
+    lua_gettable(L,-2);
+    lua_remove(L,-2);
+    lua_pushstring(L, "torch." LUAW_STRINGIFY(LUAW_NAME) "Tensor");
+    lua_pcall(L,1,0,0);
+
+    ASSERT_STATE(lua_gettop(L) == stack_size);
+}
