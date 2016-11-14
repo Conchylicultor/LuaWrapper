@@ -105,6 +105,7 @@ private:
     lua_State* L;
     int torch;  // Reference on the torch lib
 
+    int counter_L;  // Manage the lifecycle for L TODO: Copy constructor
 };
 
 

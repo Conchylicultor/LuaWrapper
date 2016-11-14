@@ -21,9 +21,11 @@
 #define LUAW_Tensor LUAW_CONCAT(LUAW_THNAME, Tensor)
 #define LUAW_Storage LUAW_CONCAT(LUAW_THNAME, Storage)
 
-#define LUAW_THType(NAME) LUAW_CONCAT_U(LUAW_THNAME, NAME)
-#define LUAW_THTensor(NAME) LUAW_CONCAT_U(LUAW_Tensor, NAME)
-#define LUAW_THStorage(NAME) LUAW_CONCAT_U(LUAW_Storage, NAME)
+#define LUAW_THType_(NAME) LUAW_CONCAT_U(LUAW_THNAME, NAME)
+#define LUAW_THTensor_(NAME) LUAW_CONCAT_U(LUAW_Tensor, NAME)
+#define LUAW_THStorage_(NAME) LUAW_CONCAT_U(LUAW_Storage, NAME)
 
+// Tensor name
+#define LUAW_TENSOR_STR ("torch." LUAW_STRINGIFY(LUAW_NAME) "Tensor")
 
 #endif
