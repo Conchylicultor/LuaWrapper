@@ -20,7 +20,7 @@ void unit_test(lua_State* L)
   */
 void test_memleak()
 {
-    auto torchVm = LuaWrap::TorchVM();
+    LuaWrap::TorchVM torchVm{};
     int model_nin = torchVm.load_model("../model_185_bnabs.net");
     torchVm.call_lua_method(model_nin, "evaluate"); // model:evaluate()
 

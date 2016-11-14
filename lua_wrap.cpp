@@ -35,8 +35,8 @@ namespace LuaWrap
 TorchVM::TorchVM()
 {
     // Initialize Lua
-    lua_State *L = luaL_newstate(); //start lua VM
-    if(L == NULL) {
+    L = luaL_newstate(); //start lua VM
+    if(L == nullptr) {
         throw LuaException("Could not create lua_State()");
     }
 
