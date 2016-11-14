@@ -89,10 +89,6 @@ public:
 
     ////////////////////////// Low level Level API //////////////////////////
 
-    /** For debugging purpose
-      */
-    void print_tensor(THFloatTensor* tensor);
-
     /** For more control over the stack
       */
     lua_State* getL();
