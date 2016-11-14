@@ -11,15 +11,19 @@
   * Memory should be freed by lua garbadge collector
   * WARNING: Batch size not supported
   */
-LUAW_Tensor* LUAW_THType_(create_tensor)(int w, int h, int c=3, int batch_size=1); // TODO: Should not be a member of torch VM (just in the namespace) < Easy fix: static member
-
-/** Push a Tensor on top of the stack
-  */
-void LUAW_THType_(push_tensor)(LUAW_Tensor* tensor);
+LUAW_Tensor* LUAW_THType_(create_tensor3d)(int w, int h, int c=3); // TODO: Should not be a member of torch VM (just in the namespace) < Easy fix: static member
 
 /** Define the default tensor type
   */
 void LUAW_THType_(setdefaulttensortype)();
+
+/** Push a Tensor on top of the stack
+  */
+void LUAW_THTensor_(push)(LUAW_Tensor* tensor);
+
+/** Pop a Tensor and return it
+  */
+LUAW_Tensor* LUAW_THTensor_(pop)();
 
 /** Print a tensor using the Lua interface.
   */

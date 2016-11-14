@@ -97,6 +97,10 @@ public:
       */
     void gc();
 
+    /** Add an object instance on the stack
+      */
+    void push_ref(int instance_ref);
+
 private:
     lua_State* L;
     int torch;  // Reference on the torch lib

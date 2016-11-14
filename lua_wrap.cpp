@@ -213,6 +213,11 @@ void TorchVM::gc()
     // TODO
 }
 
+void TorchVM::push_ref(int instance_ref)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, instance_ref);
+}
+
 
 LuaException::LuaException(const std::string& message) : _message("Lua error: " + message)
 {
