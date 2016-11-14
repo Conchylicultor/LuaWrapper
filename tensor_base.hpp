@@ -21,6 +21,6 @@ void LUAW_THType_(push_tensor)(LUAW_Tensor* tensor);
   */
 void LUAW_THType_(setdefaulttensortype)();
 
-/** Print a tensor using the Lua interface. For debugging purpose
+/** Print a tensor using the Lua interface.
   */
 void LUAW_THTensor_(print)(LUAW_Tensor* tensor);

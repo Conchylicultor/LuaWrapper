@@ -35,7 +35,10 @@ void TorchVM::LUAW_THType_(setdefaulttensortype)()
 
 void TorchVM::LUAW_THTensor_(print)(LUAW_Tensor* tensor)
 {
-    lua_getglobal(L,"print");
+    int stack_size = lua_gettop(L);
+
     luaT_pushudata(L, (void*) tensor, LUAW_TENSOR_STR);
-    lua_pcall(L,1,0,0);
+    call_lua_method(LUA_NOREF, "print", 1, 0);
+
+    ASSERT_STATE(lua_gettop(L) == stack_size);
 }

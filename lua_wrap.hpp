@@ -57,7 +57,7 @@ public:
     /**
       * @brief call_lua_method A wrapper around lua for easy method calling [-nb_in, +nb_out, -]
       * WARNING: If the number of arguments is too important, and the stack is already filled, it could overflow
-      * @param instance_ref  a reference on the object for which calling the method (0 if calling from global scope)
+      * @param instance_ref  a reference on the object for which calling the method (LUA_NOREF if calling from global scope)
       * @param method_name   the name of the method to call
       * @param nb_in         nb of arguments for the method (WARNING: Those have to be pushed on top of
       *                      the stack before calling this function). Do not include the 'self' inplicit argument

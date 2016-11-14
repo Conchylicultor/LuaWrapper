@@ -105,9 +105,8 @@ int TorchVM::load_model(const std::string& model_name)
 
 void TorchVM::load_lualib(const std::string& lib_name)
 {
-    lua_getglobal(L, "require"); // Put the require function on the stack
     lua_pushstring(L, lib_name.c_str()); // Push lib_name to the stack
-    CHECK_ERROR(lua_pcall(L,1,0,0)); // Equivalent to: require(lib_name)
+    call_lua_method(LUA_NOREF, "require", 1, 0); // require(lib_name)
 }
 
 
@@ -124,24 +123,32 @@ void TorchVM::call_lua_method(
 
     int offset = 0; // Take the self argument into account
 
-    //                                      Initial state: stack = [...,<args>]
-    lua_rawgeti(L, LUA_REGISTRYINDEX, instance_ref);    // stack = [...,<args>, instance]
-    lua_pushstring(L, method_name.c_str());             // stack = [...,<args>, instance, "method_name"]
-    lua_gettable(L, -2);                                // stack = [...,<args>, instance, instance:method()]
-    if(is_class) // Push the self argument
+    //                                       Initial state: stack = [...,<args>]
+    if(instance_ref != LUA_NOREF)
     {
-        lua_pushvalue(L, -2);                           // stack = [...,<args>, instance, instance:method(), instance]
-        offset = 1; // Take the self ref into account
+        lua_rawgeti(L, LUA_REGISTRYINDEX, instance_ref); // stack = [...,<args>, instance]
+        lua_pushstring(L, method_name.c_str());          // stack = [...,<args>, instance, "method_name"]
+        lua_gettable(L, -2);                             // stack = [...,<args>, instance, instance:method()]
+        if(is_class) // Push the self argument
+        {
+            lua_pushvalue(L, -2);                        // stack = [...,<args>, instance, instance:method(), instance]
+            offset = 1; // Take the self ref into account
+        }
+        lua_remove(L,-2-offset);                         // stack = [...,<args>, instance:method() (, instance)]
     }
-    lua_remove(L,-2-offset);                            // stack = [...,<args>, instance:method() (, instance)]
+    else
+    {
+        ASSERT_STATE(is_class == false);
+        lua_getglobal(L, method_name.c_str());           // stack = [...,<args>, fct()]
+    }
     for (int i = 0; i < nb_in; ++i) // Add arguments in the order
     {
         ASSERT_STATE(lua_gettop(L) == stack_size + 1 + offset);
         int current_top_length = nb_in + 1 + offset; // len(<args>) + len(instance:method())=1 + len(instance)=0/1
-        lua_pushvalue(L, -current_top_length);          // stack = [...,<args>, instance:method() (, instance), <args>]
-        lua_remove(L, -(current_top_length+1));         // stack = [...,instance:method()(, instance), <args>]
+        lua_pushvalue(L, -current_top_length);           // stack = [...,<args>, instance:method() (, instance), <args>]
+        lua_remove(L, -(current_top_length+1));          // stack = [...,instance:method()(, instance), <args>]
     }
-    CHECK_ERROR(lua_pcall(L, offset+nb_in, nb_out, 0)); // stack = [...,<returns>] (Function called)
+    CHECK_ERROR(lua_pcall(L, offset+nb_in, nb_out, 0));  // stack = [...,<returns>] (Function called)
 
     ASSERT_STATE(lua_gettop(L) == stack_size - nb_in + nb_out); // Sanity check
 }
