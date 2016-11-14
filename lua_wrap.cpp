@@ -75,13 +75,10 @@ int TorchVM::load_script(const std::string& script_name)
 {
     int stack_size = lua_gettop(L);
 
-    // TODO: Send init parameters to the script (array of values ?, or values pushed on the stack by the caller)
-
     // Loading the module:                 Initial state:  stack = [...]
     CHECK_ERROR(luaL_loadfile(L, script_name.c_str())); // stack = [..., chunk]
     CHECK_ERROR(lua_pcall(L,0,1,0));                    // stack = [..., dd_module]
     int script_reg = luaL_ref(L,LUA_REGISTRYINDEX);     // stack = [...]
-    call_lua_method(script_reg, "load");                // stack = [...] (calling dd_module:load())
 
     ASSERT_STATE(lua_gettop(L) == stack_size); // Leave the stack as we found it
 
@@ -91,16 +88,16 @@ int TorchVM::load_script(const std::string& script_name)
 
 int TorchVM::load_model(const std::string& model_name)
 {
-    ASSERT_STATE(lua_gettop(L) == 0); //   Initial state:  stack = []
+    int stack_size = lua_gettop(L);
 
-    // Call torch.load("model_name")
-    lua_pushstring(L, model_name.c_str());              // stack = ["model_name"]
-    call_lua_method(torch, "load", 1, 1, false);        // stack = [model] (input: model name, output: model obj)
+    // Call torch.load("model_name")       Initial state:  stack = [...]
+    lua_pushstring(L, model_name.c_str());              // stack = [..., "model_name"]
+    call_lua_method(torch, "load", 1, 1, false);        // stack = [..., model] (input: model name, output: model obj)
 
     // Pop and save the result
-    int model_reg = luaL_ref(L,LUA_REGISTRYINDEX);      // stack = []
+    int model_reg = luaL_ref(L,LUA_REGISTRYINDEX);      // stack = [...]
 
-    ASSERT_STATE(lua_gettop(L) == 0); // Final state empty
+    ASSERT_STATE(lua_gettop(L) == stack_size); // Final state empty
 
     return model_reg;
 }
@@ -198,13 +195,6 @@ TNumber populate_number(lua_State* L)
 
 ////////////////////////// Low level Level API //////////////////////////
 
-
-void TorchVM::print_tensor(THFloatTensor* tensor) // TODO: Make generic
-{
-    lua_getglobal(L,"print");
-    luaT_pushudata(L, (void*) tensor, "torch.FloatTensor");
-    lua_pcall(L,1,0,0);
-}
 
 lua_State* TorchVM::getL()
 {

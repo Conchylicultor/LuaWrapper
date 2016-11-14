@@ -57,19 +57,19 @@ public:
     /**
       * @brief call_lua_method A wrapper around lua for easy method calling [-nb_in, +nb_out, -]
       * WARNING: If the number of arguments is too important, and the stack is already filled, it could overflow
-      * @param instance_ref  a reference on the object for which calling the method
+      * @param instance_ref  a reference on the object for which calling the method (0 if calling from global scope)
       * @param method_name   the name of the method to call
       * @param nb_in         nb of arguments for the method (WARNING: Those have to be pushed on top of
       *                      the stack before calling this function). Do not include the 'self' inplicit argument
       * @param nb_out        Nb of returns values (you can catch them at the top of the stack)
-      * @param is_class      True is the the table act as a class (will add self argument), false if it's just a regular table
+      * @param is_class      True is the the table act as a class (will add self argument), false if it's just a regular table. In lua that would be a:foo() vs a.foo()
       */
     void call_lua_method(
         int instance_ref,
         const std::string& method_name,
         int nb_in=0,
         int nb_out=0,
-        bool is_class=true
+        bool is_class=false
     );
 
     /** Extract the array at the top of the stack [-1, +0, -].

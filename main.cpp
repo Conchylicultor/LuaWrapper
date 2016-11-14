@@ -22,7 +22,7 @@ void test_memleak()
 {
     LuaWrap::TorchVM torchVm{};
     int model_nin = torchVm.load_model("../model_185_bnabs.net");
-    torchVm.call_lua_method(model_nin, "evaluate"); // model:evaluate()
+    torchVm.call_lua_method(model_nin, "evaluate", 0, 0, true); // model:evaluate()
 
     for(int i = 0 ; i < 100000 ; ++i)
     {
@@ -31,7 +31,7 @@ void test_memleak()
 
         luaT_stackdump(torchVm.getL());
 
-        torchVm.call_lua_method(model_nin, "forward", 1, 1); // model:forward(input)
+        torchVm.call_lua_method(model_nin, "forward", 1, 1, true); // model:forward(input)
 
         // If the garbadge collector isn't called form time to time, the memory will keep growing
         // Calling it every iterations will strongly affect the performances
