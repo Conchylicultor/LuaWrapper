@@ -65,7 +65,7 @@ void test_memleak()
         // Calling it every iterations will strongly affect the performances
         if(i % 1000 == 0)
         {
-            lua_gc(torchVm.getL(), LUA_GCCOLLECT, 0);
+            torchVm.gc();
         }
 
         luaT_stackdump(torchVm.getL());
@@ -93,8 +93,8 @@ int main(int argc, char** argv)
 
     cout << "Lua/torch wrapper test" << endl;
 
-    test_simple_example();
-    //test_memleak();
+    //test_simple_example();
+    test_memleak();
     //test_memleak_script();
 
     cout << "The End" << endl;

@@ -210,7 +210,7 @@ lua_State* TorchVM::getL()
 
 void TorchVM::gc()
 {
-    // TODO
+    lua_gc(L, LUA_GCCOLLECT, 0);
 }
 
 void TorchVM::push_ref(int instance_ref)
