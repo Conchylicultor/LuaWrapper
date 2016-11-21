@@ -34,9 +34,16 @@ void TorchVM::LUAW_THTensor_(push)(LUAW_Tensor* tensor)
 
 LUAW_Tensor* TorchVM::LUAW_THTensor_(pop)()
 {
-    LUAW_Tensor* tensor = (LUAW_Tensor*) luaT_checkudata(L, 1, LUAW_TENSOR_STR);
+    LUAW_Tensor* tensor = static_cast<LUAW_Tensor*>(luaT_checkudata(L, -1, LUAW_TENSOR_STR));
     lua_pop(L,1); //luaT_checkudata doesnt actually pop the value
-    // TODO: Does pop trigger the garbadge collector ?? (if yes, then we are in trouble)
+    // TODO: Does lua_pop trigger the garbadge collector ?? (if yes, then we are in trouble
+    // and may return an invalid pointer)
+    // One solution could be to copy the tensor (and its underlying storage, returned it
+    // and leave the memory management of this tensor to the caller)
+    // If the tensor has been returned by model:forward(), that will be a direct reference to
+    // the model output so its lifespan will be linked to the model
+    // For performaces, we could leave the choice to the user (by default do a
+    // safe copy but leave the option to return a direct reference to the tensor)
     return tensor;
 }
 

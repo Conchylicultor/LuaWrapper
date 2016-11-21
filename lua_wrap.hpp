@@ -102,6 +102,8 @@ public:
     void push_ref(int instance_ref);
 
 private:
+    TorchVM(const TorchVM& other); // Copy forbidden (would create problems with lua_State)
+
     lua_State* L;
     int torch;  // Reference on the torch lib
 
