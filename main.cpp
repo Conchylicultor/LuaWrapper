@@ -2,17 +2,12 @@
 #include <chrono>
 #include <thread>
 
+#include <unistd.h>  // For working directory manipulation
+
 #include "lua_wrap.hpp"
 
 using namespace std;
 
-
-/** Test some of the functions of the API
-  */
-void unit_test(lua_State* L)
-{
-    (void)L;
-}
 
 
 /** Simple example
@@ -80,7 +75,49 @@ void test_memleak()
   */
 void test_memleak_script()
 {
+    // Set the working directories
+    char* workdir = realpath("../../multipath/", NULL);
+    string workdir_lua = workdir;
+    free(workdir);
+    chdir(workdir_lua.c_str()); // We assume that the dir names won't change while the program is running
+    std::cout << "Workdir: " << workdir_lua << std::endl;
 
+    LuaWrap::TorchVM torchVm{};
+    int segm_module = torchVm.load_script("segmentation_main.lua");
+
+    torchVm.call_lua_method(segm_module, "load", 0, 0, true); // model:forward(input)
+
+
+    THByteTensor *masks; // [nb_instance, height, width]
+    std::vector<float> probabilities;
+    std::vector<int> classes_ids;
+    std::vector<std::string> classes;
+
+    for(int i = 0 ; i < 100000 ; ++i)
+    {
+        std::cout << i << std::endl;
+        THFloatTensor* input = torchVm.THFloat_create_tensor3d(3, 96, 96);
+        THFloatStorage_fill(THFloatTensor_storage(input), 0.3*(i%2) + 0.01);  // The tensor need to be "correctly" initialized to avoid runtime crash
+        torchVm.THFloatTensor_push(input);
+
+        torchVm.call_lua_method(segm_module, "forward", 1, 4, true); // model:forward(input)
+
+        cout << "Returned values:" << endl;
+        luaT_stackdump(torchVm.getL());
+
+        //      stack [..., self.dataset.categories, classes, probabilities, masks]
+        masks = torchVm.THByteTensor_pop();  // TODO: Check if tensor valid ??
+        torchVm.THByteTensor_print(masks);
+        //      stack [..., self.dataset.categories, classes, probabilities]
+        torchVm.pop_lua_array<float>(probabilities, LuaWrap::populate_number<float>);
+        //      stack [..., self.dataset.categories, classes]
+        torchVm.pop_lua_array<int>(classes_ids, LuaWrap::populate_number<int>);
+        //      stack [..., self.dataset.categories]
+        torchVm.pop_lua_array<std::string>(classes, &LuaWrap::populate_string);
+        //      stack [...]
+
+        // GC Don't seems necessary here
+    }
 }
 
 
@@ -94,8 +131,8 @@ int main(int argc, char** argv)
     cout << "Lua/torch wrapper test" << endl;
 
     //test_simple_example();
-    test_memleak();
-    //test_memleak_script();
+    //test_memleak();
+    test_memleak_script();
 
     cout << "The End" << endl;
 

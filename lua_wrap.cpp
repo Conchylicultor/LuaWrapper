@@ -192,6 +192,22 @@ TNumber populate_number(lua_State* L)
     return static_cast<TNumber>(lua_tonumber(L, -1));
 }
 
+// Instanciate templates explicitly here (avoid linker errors)
+template char populate_number<char>(lua_State*);
+template int populate_number<int>(lua_State*);
+template long populate_number<long>(lua_State*);
+template short populate_number<short>(lua_State*);
+template float populate_number<float>(lua_State*);
+template double populate_number<double>(lua_State*);
+
+template void TorchVM::pop_lua_array<std::string>(std::vector<std::string>&, std::string (*populate_fct)(lua_State*));
+template void TorchVM::pop_lua_array<char>(std::vector<char>&, char (*populate_fct)(lua_State*));
+template void TorchVM::pop_lua_array<int>(std::vector<int>&, int (*populate_fct)(lua_State*));
+template void TorchVM::pop_lua_array<long>(std::vector<long>&, long (*populate_fct)(lua_State*));
+template void TorchVM::pop_lua_array<short>(std::vector<short>&, short (*populate_fct)(lua_State*));
+template void TorchVM::pop_lua_array<float>(std::vector<float>&, float (*populate_fct)(lua_State*));
+template void TorchVM::pop_lua_array<double>(std::vector<double>&, double (*populate_fct)(lua_State*));
+
 
 ////////////////////////// OpenCv/Tensor manipulation API //////////////////////////
 
