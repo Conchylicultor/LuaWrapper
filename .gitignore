@@ -1,5 +1,6 @@
-# Output folder
+# Output folders
 build/
+lib/
 
 # Torch data (networks)
 *.net

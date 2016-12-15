@@ -12,3 +12,5 @@ cd build
 cmake ..
 make
 ```
+
+Then, to use the library, just include `lua_wrap.hpp` (present in the `include/` folder) and link the generated `lib/liblua_wrap.so`. After compilation, the example present in the `build/` folder can be launched with `./a.out`.
