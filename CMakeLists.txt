@@ -30,7 +30,7 @@ set(MAIN_SOURCES
     src/lua_wrap.cpp
     include/lua_wrap.hpp
 
-    src/main.cpp
+    main.cpp
 )
 
 link_directories(${TH_LIB_DIR})

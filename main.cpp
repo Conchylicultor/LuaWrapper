@@ -29,7 +29,7 @@ void test_simple_example()
     int model = torchVm.load_model("../model.net"); // model = torch.load('../model.net')
     torchVm.push_ref(model);
     torchVm.call_lua_method(LUA_NOREF, "print", 1); // print(model)
-    THFloatTensor* input = torchVm.THFloat_create_tensor3d(1, 3, 3);
+    THFloatTensor* input = torchVm.THFloat_create_tensor3d(1, 3, 3);  // Tune input dim accordingly the network
     torchVm.THFloatTensor_print(input);
     torchVm.THFloatTensor_push(input);
     torchVm.call_lua_method(model, "forward", 1, 1, true); // output = model:forward(input)
@@ -79,7 +79,11 @@ void test_memleak_script()
     char* workdir = realpath("../../multipath/", NULL);
     string workdir_lua = workdir;
     free(workdir);
-    chdir(workdir_lua.c_str()); // We assume that the dir names won't change while the program is running
+    if(chdir(workdir_lua.c_str()) != 0)  // We assume that the dir names won't change while the program is running
+    {
+        std::cerr << "Runtime Error: chdir failed" << std::endl;
+        return; // We assume that the dir names won't change while the program is running
+    }
     std::cout << "Workdir: " << workdir_lua << std::endl;
 
     LuaWrap::TorchVM torchVm{};

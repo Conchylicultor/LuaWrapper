@@ -1,4 +1,6 @@
 # Output folder
+build/
+
+# Torch data (networks)
 *.net
 *.t7
-build/
