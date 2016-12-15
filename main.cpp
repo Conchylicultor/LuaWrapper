@@ -18,23 +18,23 @@ void test_simple_example()
     LuaWrap::TorchVM torchVm{};
 
     // Load a lua script and launch some functions
-    int demo_module = torchVm.load_script("../demo_script.lua");
-    torchVm.call_lua_method(demo_module, "foo"); // Static method
-    torchVm.call_lua_method(demo_module, "foo2", 0, 0, true); // Member
+    int demo_module = torchVm.load_script("../demo_script.lua");  // demo_module = require('demo_script')
+    torchVm.call_lua_method(demo_module, "foo"); // demo_module.foo()    (Static method)
+    torchVm.call_lua_method(demo_module, "foo2", 0, 0, true); // demo_module:foo()    (Member)
     torchVm.call_lua_method(demo_module, "foo2", 0, 0, true);
     torchVm.call_lua_method(demo_module, "foo2", 0, 0, true);
-    torchVm.call_lua_method(LUA_NOREF, "bar"); // Global function
+    torchVm.call_lua_method(LUA_NOREF, "bar"); // bar()    (Global function)
 
     // Directly load a model and run the forward pass
-    int model = torchVm.load_model("../model.net");
+    int model = torchVm.load_model("../model.net"); // model = torch.load('../model.net')
     torchVm.push_ref(model);
     torchVm.call_lua_method(LUA_NOREF, "print", 1); // print(model)
     THFloatTensor* input = torchVm.THFloat_create_tensor3d(1, 3, 3);
     torchVm.THFloatTensor_print(input);
     torchVm.THFloatTensor_push(input);
-    torchVm.call_lua_method(model, "forward", 1, 1, true); // model:forward(input)
+    torchVm.call_lua_method(model, "forward", 1, 1, true); // output = model:forward(input)
     THFloatTensor* output = torchVm.THFloatTensor_pop();
-    torchVm.THFloatTensor_print(output);
+    torchVm.THFloatTensor_print(output); // print(output)
 }
 
 
@@ -52,19 +52,19 @@ void test_memleak()
         THFloatTensor* input = torchVm.THFloat_create_tensor3d(3, 96, 96);
         torchVm.THFloatTensor_push(input);
 
-        luaT_stackdump(torchVm.getL());
+        luaT_stackdump(torchVm.getL());  // Print the stack (debugging)
 
-        torchVm.call_lua_method(model, "forward", 1, 1, true); // model:forward(input)
+        torchVm.call_lua_method(model, "forward", 1, 1, true); // output = model:forward(input)
 
         // If the garbadge collector isn't called form time to time, the memory will keep growing
         // Calling it every iterations will strongly affect the performances
         if(i % 1000 == 0)
         {
-            torchVm.gc();
+            torchVm.gc();  // Call the garbadge collector
         }
 
-        luaT_stackdump(torchVm.getL());
-        lua_pop(torchVm.getL(), 1);
+        luaT_stackdump(torchVm.getL());  // Print the stack (debugging)
+        lua_pop(torchVm.getL(), 1);  // Remove the ouput
 
         std::cout << i << " " << lua_gc (torchVm.getL(), LUA_GCCOUNT, 0) << " " << lua_gc (torchVm.getL(), LUA_GCCOUNTB, 0) << std::endl;
     }
@@ -85,7 +85,7 @@ void test_memleak_script()
     LuaWrap::TorchVM torchVm{};
     int segm_module = torchVm.load_script("segmentation_main.lua");
 
-    torchVm.call_lua_method(segm_module, "load", 0, 0, true); // model:forward(input)
+    torchVm.call_lua_method(segm_module, "load", 0, 0, true); // model:load()
 
 
     THByteTensor *masks; // [nb_instance, height, width]
@@ -100,7 +100,7 @@ void test_memleak_script()
         THFloatStorage_fill(THFloatTensor_storage(input), 0.3*(i%2) + 0.01);  // The tensor need to be "correctly" initialized to avoid runtime crash
         torchVm.THFloatTensor_push(input);
 
-        torchVm.call_lua_method(segm_module, "forward", 1, 4, true); // model:forward(input)
+        torchVm.call_lua_method(segm_module, "forward", 1, 4, true); // categories, classes, probs, masks = model:forward(input)
 
         cout << "Returned values:" << endl;
         luaT_stackdump(torchVm.getL());
@@ -130,9 +130,9 @@ int main(int argc, char** argv)
 
     cout << "Lua/torch wrapper test" << endl;
 
-    //test_simple_example();
+    test_simple_example();
     //test_memleak();
-    test_memleak_script();
+    //test_memleak_script();
 
     cout << "The End" << endl;
 
