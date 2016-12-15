@@ -21,14 +21,16 @@ set(TH_LIB_DIR ${TH_LIBRARIES} ${LUA_LIBRARIES} ${LUAT_LIBRARIES})
 set(TH_LIB_DEPS -lTH -lluajit -lluaT) # -ltorch-lua-static -lnn -ltorch -lnnx -limage -limgraph
 
 
+include_directories(include/)
+
 set(MAIN_SOURCES
     # Do NOT include generics here (specially ,cpp), should be dynamically compiled when they
     # are included in lua WRAP
 
-    lua_wrap.cpp
-    lua_wrap.hpp
+    src/lua_wrap.cpp
+    include/lua_wrap.hpp
 
-    main.cpp
+    src/main.cpp
 )
 
 link_directories(${TH_LIB_DIR})
