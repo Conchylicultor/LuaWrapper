@@ -11,7 +11,7 @@
   * Memory should be freed by lua garbadge collector
   * WARNING: Batch size not supported
   */
-LUAW_Tensor* LUAW_THType_(create_tensor3d)(int c, int w, int h); // TODO: Should not be a member of torch VM (just in the namespace) < Easy fix: static member
+static LUAW_Tensor* LUAW_THType_(create_tensor3d)(int c, int w, int h);
 
 /** Define the default tensor type
   */

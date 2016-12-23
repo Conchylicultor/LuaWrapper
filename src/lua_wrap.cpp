@@ -215,6 +215,31 @@ template void TorchVM::pop_lua_array<double>(std::vector<double>&, double (*popu
 // Define the generics here
 #include "tensor_all.cpp"
 
+THFloatTensor* TorchVM::convert_mat_to_th(const cv::Mat &input)
+{
+    ASSERT_STATE(input.type() == CV_8UC3);
+
+    // Allocate memory (need to be freed be the user or lua garbadge collector)
+    THFloatTensor* tensor = THFloat_create_tensor3d(input.channels(), input.rows, input.cols);
+
+    // TODO (Perfs): Could probably parallelize with pragma
+    // TODO (Feature): Could add a option to substract mean/std
+    for (int k = 0; k < input.channels(); ++k)
+    {
+        for (int i = 0; i < input.rows; ++i)
+        {
+            for (int j = 0; j < input.cols; ++j)
+            {
+                THFloatTensor_set3d(tensor, k, i, j,
+                                    (float)input.at<cv::Vec3i>(i, j)[2-k] / 255.f); // We scale and copy the channel in invert order (BGR to RGB)
+            }
+        }
+    }
+
+    // TODO: Check tensor correctness (display ??)
+
+    return tensor;
+}
 
 ////////////////////////// Low level Level API //////////////////////////
 

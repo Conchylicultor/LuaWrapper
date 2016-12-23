@@ -5,6 +5,8 @@
 #include <vector>
 #include <exception>
 
+#include <opencv2/core/core.hpp>
+
 #include <lua.hpp>
 extern "C" {
     #include <TH.h>
@@ -86,6 +88,16 @@ public:
 
     // Define the generics here
     #include "tensor_all.hpp"
+
+    /** Return the 3d float tensor associated with the OpenCv image
+      * The original image need to be of type CV_8UC3
+      * Warning: The original image will be scaled from [0, 255] to [0,1]
+      * Warning: the original image need to have exactly 3 channels BGR (the
+      * function will convert to RGB)
+      * Warning: It is the user responsibility to fee the tensor afer use, using
+      * the associated Torch API function
+      */
+    THFloatTensor* convert_mat_to_th(const cv::Mat &input);
 
     ////////////////////////// Low level Level API //////////////////////////
 
