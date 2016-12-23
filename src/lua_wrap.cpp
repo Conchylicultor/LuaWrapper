@@ -26,6 +26,16 @@
         throw LuaException("Runtime Error in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__) + ": " + errMsg);\
     }
 
+/** Same as CHECK_ERROR, but allows a customisable message (TODO: Could avoid code duplication with CHECK_ERROR)
+  */
+#define CHECK_ERROR_MSG(rcode, message) \
+    if (rcode) \
+    {\
+        std::string errMsg(lua_tostring(L, -1));\
+        throw LuaException("Runtime Error in " + std::string(__FILE__) + " at line " + std::to_string(__LINE__) + ": " + errMsg + "\n" + \
+                           "Message: " + std::string(message));\
+    }
+
 
 namespace LuaWrap
 {
@@ -148,7 +158,10 @@ void TorchVM::call_lua_method(
         lua_pushvalue(L, -current_top_length);           // stack = [...,<args>, instance:method() (, instance), <args>]
         lua_remove(L, -(current_top_length+1));          // stack = [...,instance:method()(, instance), <args>]
     }
-    CHECK_ERROR(lua_pcall(L, offset+nb_in, nb_out, 0));  // stack = [...,<returns>] (Function called)
+    CHECK_ERROR_MSG(
+        lua_pcall(L, offset+nb_in, nb_out, 0),           // stack = [...,<returns>] (Function called)
+        "Error in function " + method_name + " [-" + std::to_string(nb_in) + ", +"+ std::to_string(nb_out) + "]"
+    );
 
     ASSERT_STATE(lua_gettop(L) == stack_size - nb_in + nb_out); // Sanity check
 }
