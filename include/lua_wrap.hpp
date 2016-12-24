@@ -5,8 +5,6 @@
 #include <vector>
 #include <exception>
 
-#include <opencv2/core/core.hpp>
-
 #include <lua.hpp>
 extern "C" {
     #include <TH.h>
@@ -15,6 +13,11 @@ extern "C" {
 
 #include "lua_wrap_generic.hpp"
 
+// Forward declarations
+namespace cv
+{
+    class Mat;
+}
 
 
 // TODO: can add an option to call luaGC every x iters of callLuaMethod
