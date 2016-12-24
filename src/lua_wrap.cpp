@@ -228,7 +228,7 @@ template void TorchVM::pop_lua_array<double>(std::vector<double>&, double (*popu
 // Define the generics here
 #include "tensor_all.cpp"
 
-THFloatTensor* TorchVM::convert_mat_to_th(const cv::Mat &input)
+THFloatTensor* TorchVM::convert_mat_to_th(const cv::Mat& input)
 {
     ASSERT_STATE(input.type() == CV_8UC3);
 

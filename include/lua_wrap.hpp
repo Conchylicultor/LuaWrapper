@@ -100,7 +100,7 @@ public:
       * Warning: It is the user responsibility to fee the tensor afer use, using
       * the associated Torch API function
       */
-    THFloatTensor* convert_mat_to_th(const cv::Mat &input);
+    THFloatTensor* convert_mat_to_th(const cv::Mat& input);
 
     ////////////////////////// Low level Level API //////////////////////////
 
